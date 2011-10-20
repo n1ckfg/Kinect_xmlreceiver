@@ -8,7 +8,7 @@ int stageWidth = 640;
 int stageHeight = 480;
 int fps = 24;
 int counter = 0;
-int counterMax = 400; //number of Frames to record
+int counterMax = 400; //number of MocapFrames to record
 
 Countdown countdown;
 
@@ -91,8 +91,8 @@ void oscEvent(OscMessage msg) {
 
 void xmlInit() {
   xmlIO = new XMLInOut(this);
-  xmlFile = new proxml.XMLElement("Motion");
-  xmlFile.addAttribute("numFrames",counterMax);
+  xmlFile = new proxml.XMLElement("MotionCapture");
+  xmlFile.addAttribute("numMocapFrames",counterMax);
   xmlFile.addAttribute("fps",fps);
   xmlFile.addAttribute("width",width);
   xmlFile.addAttribute("height",height);
@@ -100,11 +100,11 @@ void xmlInit() {
 }
 
 void xmlAdd() {
-  proxml.XMLElement Frame = new proxml.XMLElement("Frame");
-  xmlFile.addChild(Frame);
-  Frame.addAttribute("index",counter);
+  proxml.XMLElement MocapFrame = new proxml.XMLElement("MocapFrame");
+  xmlFile.addChild(MocapFrame);
+  MocapFrame.addAttribute("index",counter);
   proxml.XMLElement Skeleton = new proxml.XMLElement("Skeleton");
-  Frame.addChild(Skeleton);
+  MocapFrame.addChild(Skeleton);
   Skeleton.addAttribute("id",0);
   proxml.XMLElement Joints = new proxml.XMLElement("Joints");
   Skeleton.addChild(Joints);
