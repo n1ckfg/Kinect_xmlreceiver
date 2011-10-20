@@ -7,6 +7,8 @@ import ddf.minim.*;
 int stageWidth = 640;
 int stageHeight = 480;
 int fps = 24;
+int counter = 0;
+int counterMax = 400; //number of frames to record
 
 Countdown countdown;
 
@@ -18,12 +20,13 @@ XMLInOut xmlIO;
 proxml.XMLElement xmlFile;
 String xmlFileName = "mocapData.xml";
 
-int counter = 0;
-int counterMax = 400;
 boolean limitReached = false;
 
 String[] oscNames = {
-  "r_hand","r_elbow","r_shoulder", "l_hand","l_elbow","l_shoulder","head"
+//~~~   complete list of working joints, check updates at https://github.com/Sensebloom/OSCeleton  ~~~
+"head","neck","torso","r_shoulder","r_elbow","r_hand","l_shoulder","l_elbow","l_hand","r_hip","r_knee","r_ankle","r_foot","l_hip","l_knee","l_ankle","l_foot"
+//~~~
+//"r_hand","r_wrist","r_elbow","r_shoulder", "l_hand","l_wrist","l_elbow","l_shoulder","head","torso"
 };
 proxml.XMLElement[] oscXmlTags = new proxml.XMLElement[oscNames.length];
 
@@ -66,6 +69,7 @@ void draw() {
         limitReached = true;
         xmlSaveToDisk();
         println("saved file " + xmlFileName);
+        stop();
       }
     }
   }
@@ -87,27 +91,29 @@ void oscEvent(OscMessage msg) {
 
 void xmlInit() {
   xmlIO = new XMLInOut(this);
-  xmlFile = new proxml.XMLElement("keyFrameList");
+  xmlFile = new proxml.XMLElement("motion");
+  xmlFile.addAttribute("numFrames",counterMax);
+  xmlFile.addAttribute("fps",fps);
+  xmlFile.addAttribute("width",width);
+  xmlFile.addAttribute("height",height);
+  xmlFile.addAttribute("depth",depth);
 }
 
 void xmlAdd() {
-  proxml.XMLElement frameData = new proxml.XMLElement("frameData");
-  xmlFile.addChild(frameData);
-  proxml.XMLElement frameNum = new proxml.XMLElement("frameNum");
-  frameData.addChild(frameNum);
-  frameNum.addChild(new proxml.XMLElement(""+counter,true));
+  proxml.XMLElement frame = new proxml.XMLElement("frame");
+  xmlFile.addChild(frame);
+  frame.addAttribute("index",counter);
+  proxml.XMLElement skeleton = new proxml.XMLElement("skeleton");
+  frame.addChild(skeleton);
+  skeleton.addAttribute("id",0);
+  proxml.XMLElement joints = new proxml.XMLElement("joints");
+  skeleton.addChild(joints);
   for(int i=0;i<oscNames.length;i++) {
     oscXmlTags[i] = new proxml.XMLElement(oscNames[i]);
-    frameData.addChild(oscXmlTags[i]);
-    proxml.XMLElement posX = new proxml.XMLElement("x");
-    oscXmlTags[i].addChild(posX);
-    posX.addChild(new proxml.XMLElement(""+x[i],true));
-    proxml.XMLElement posY = new proxml.XMLElement("y");
-    oscXmlTags[i].addChild(posY);
-    posY.addChild(new proxml.XMLElement(""+y[i],true)); 
-    proxml.XMLElement posZ = new proxml.XMLElement("z");
-    oscXmlTags[i].addChild(posZ);
-    posZ.addChild(new proxml.XMLElement(""+z[i],true));
+    joints.addChild(oscXmlTags[i]);
+    oscXmlTags[i].addAttribute("x",x[i]);
+    oscXmlTags[i].addAttribute("y",y[i]);
+    oscXmlTags[i].addAttribute("z",z[i]);
   }
 }
 
@@ -120,5 +126,6 @@ void stop() {
   countdown.stop();
   minim.stop();
   super.stop();
+  exit();
 }
 
